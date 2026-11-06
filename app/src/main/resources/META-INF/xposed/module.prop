@@ -1,0 +1,8 @@
+minApiVersion=102
+targetApiVersion=102
+staticScope=true
+moduleName=ControlPhone Unlock
+moduleVersion=1.0.0
+moduleVersionCode=1
+moduleAuthor=jfjdjdhsj
+moduleDescription=Reports a perpetual license for com.techbao.controlphone 1.6.3 at runtime, keeping the original APK signature intact.

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="module_name">遥控手机解锁</string>
+    <string name="module_description">在运行时让 com.techbao.controlphone 1.6.3 直接返回永久激活状态，不修改原包签名，因此小米运动健康的调用方签名校验仍可通过。</string>
+</resources>
