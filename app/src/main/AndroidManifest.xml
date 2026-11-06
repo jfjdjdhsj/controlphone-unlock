@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- targetSdk 36: package visibility is filtered, so both packages the UI
+         inspects or launches must be declared explicitly. -->
+    <queries>
+        <package android:name="com.techbao.controlphone" />
+        <package android:name="org.lsposed.manager" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:description="@string/module_description"
