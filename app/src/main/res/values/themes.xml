@@ -40,9 +40,9 @@
         <item name="colorErrorContainer">@color/md_error_container</item>
         <item name="colorOnErrorContainer">@color/md_on_error_container</item>
 
-        <item name="colorInverseSurface">@color/md_inverse_surface</item>
-        <item name="colorInverseOnSurface">@color/md_inverse_on_surface</item>
-        <item name="colorInversePrimary">@color/md_inverse_primary</item>
+        <item name="colorSurfaceInverse">@color/md_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/md_inverse_on_surface</item>
+        <item name="colorPrimaryInverse">@color/md_inverse_primary</item>
 
         <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
