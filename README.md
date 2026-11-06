@@ -17,9 +17,10 @@ hook(q0.s.g()).intercept(chain -> new q0.u(q0.t.k, "已永久激活", null, null
 Every push to `main` triggers GitHub Actions:
 
 1. Build `:app:assembleRelease` with Gradle 8.13 / AGP 8.13.2 / JDK 17.
-2. Sign with the keystore stored in repository secrets.
-3. Verify the APK contains `META-INF/xposed/*` and print the signer.
-4. Publish a GitHub Release tagged `v1.0.<run_number>` with the APK attached.
+2. Shrink with R8 (`isMinifyEnabled` + `isShrinkResources`); `ModuleMain` is kept because LSPosed loads it by name from `java_init.list`.
+3. Sign with the keystore stored in repository secrets.
+4. Verify the APK contains `META-INF/xposed/*`, that `ModuleMain` survived R8, and print the signer.
+5. Publish a GitHub Release tagged `v1.0.<run_number>`, with release notes generated from the commits since the previous tag.
 
 Local build (optional):
 
@@ -37,7 +38,7 @@ Without `SIGNING_STORE_FILE` the release build falls back to the debug key.
 
 ## Module UI
 
-The APK ships a launcher activity (dark card layout, no AndroidX dependency) that reports what the module can actually verify from its own process:
+The APK ships a launcher activity built on Material 3 (`Theme.Material3.DayNight`, dynamic color on Android 12+, `MaterialToolbar` / filled `MaterialCardView` / assist `Chip` / `MaterialButton`). It reports what the module can verify from its own process:
 
 - **Target present / version** — installed version of `com.techbao.controlphone`.
 - **Signature** — SHA-256 of the target's signing certificate, compared against the official `e3a8aea2…da0caa`. A repacked build shows `非官方签名`, which means Mi Fitness will reject the connection no matter what this hook does.
