@@ -1,6 +1,5 @@
 package io.github.jfjdjdhsj.controlphone;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,31 +8,40 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
-import android.graphics.Insets;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
+import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.WindowInsets;
-import android.widget.Button;
+import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.ColorUtils;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.TextViewCompat;
+
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.color.DynamicColors;
 
 import java.security.MessageDigest;
 import java.util.Locale;
 
 /**
- * Module UI: reports whether the target app is present, at the supported version,
- * and still signed with the original certificate. The signature check matters
- * because Mi Fitness verifies the caller's signing certificate, so a repacked
- * build of the target app can never connect to the band regardless of this hook.
+ * Module UI, Material 3. Reports whether the target app is present, at the
+ * supported version, and still signed with the original certificate. The
+ * signature check matters because Mi Fitness verifies the caller's signing
+ * certificate, so a repacked build can never connect to the band.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ControlPhoneUnlock";
     private static final String TARGET_PACKAGE = "com.techbao.controlphone";
@@ -44,10 +52,12 @@ public class MainActivity extends Activity {
     private static final String OFFICIAL_CERT_SHA256 =
             "e3a8aea2e82ab5143dd6bccaae954ccf941c01375bf759e8b99db5a363da0caa";
 
-    private LinearLayout envCard;
-    private LinearLayout policyCard;
-    private TextView chip;
-    private Button openAppButton;
+    private LinearLayout envRows;
+    private LinearLayout policyRows;
+    private Chip statusChip;
+    private TextView heroTitle;
+    private TextView heroSupport;
+    private MaterialButton openAppButton;
 
     private String targetVersion;
     private String targetCertHash;
@@ -55,12 +65,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        DynamicColors.applyToActivityIfAvailable(this);
         setContentView(R.layout.activity_main);
 
-        envCard = findViewById(R.id.card_env);
-        policyCard = findViewById(R.id.card_policy);
-        chip = findViewById(R.id.tv_chip);
+        envRows = findViewById(R.id.rows_env);
+        policyRows = findViewById(R.id.rows_policy);
+        statusChip = findViewById(R.id.chip_status);
+        heroTitle = findViewById(R.id.tv_hero_title);
+        heroSupport = findViewById(R.id.tv_hero_support);
         openAppButton = findViewById(R.id.btn_open_app);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setSubtitle(getString(R.string.app_subtitle) + " · v" + moduleVersion());
 
         applyWindowInsets();
 
@@ -76,23 +92,14 @@ public class MainActivity extends Activity {
     }
 
     private void applyWindowInsets() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            InsetsHelper.apply(this);
-        }
-    }
-
-    /** Kept separate so the API 30 types are only resolved when actually used. */
-    private static final class InsetsHelper {
-        static void apply(Activity activity) {
-            activity.getWindow().setDecorFitsSystemWindows(false);
-            ScrollView root = activity.findViewById(R.id.root);
-            root.setOnApplyWindowInsetsListener((v, insets) -> {
-                Insets bars = insets.getInsets(
-                        WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-                return insets;
-            });
-        }
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        View root = findViewById(R.id.root);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     private void refresh() {
@@ -116,77 +123,81 @@ public class MainActivity extends Activity {
         Log.i(TAG, "target installed=" + installed + " version=" + targetVersion
                 + " cert=" + targetCertHash + " official=" + official + " supported=" + supported);
 
-        envCard.removeAllViews();
-        addRow(envCard, getString(R.string.row_target),
+        envRows.removeAllViews();
+        addRow(envRows, getString(R.string.row_target),
                 getString(installed ? R.string.value_installed : R.string.value_not_installed),
-                getColor(installed ? R.color.ok : R.color.bad));
-        addRow(envCard, getString(R.string.row_version),
+                getColor(installed ? R.color.status_ok : R.color.status_bad));
+        addRow(envRows, getString(R.string.row_version),
                 targetVersion == null ? "—" : targetVersion,
-                TARGET_VERSION.equals(targetVersion) ? getColor(R.color.text_primary) : getColor(R.color.warn));
-        addRow(envCard, getString(R.string.row_signature),
+                TARGET_VERSION.equals(targetVersion)
+                        ? getColor(R.color.md_on_surface) : getColor(R.color.status_warn));
+        addRow(envRows, getString(R.string.row_signature),
                 targetCertHash == null ? getString(R.string.value_unknown)
                         : getString(official ? R.string.value_official : R.string.value_unofficial),
-                targetCertHash == null ? getColor(R.color.text_secondary)
-                        : getColor(official ? R.color.ok : R.color.bad));
-        addRow(envCard, getString(R.string.row_compat),
+                targetCertHash == null ? getColor(R.color.md_on_surface_variant)
+                        : getColor(official ? R.color.status_ok : R.color.status_bad));
+        addRow(envRows, getString(R.string.row_compat),
                 getString(supported ? R.string.value_compat_ok : R.string.value_compat_mismatch),
-                getColor(supported ? R.color.ok : R.color.warn));
+                getColor(supported ? R.color.status_ok : R.color.status_warn));
 
-        policyCard.removeAllViews();
-        addRow(policyCard, getString(R.string.row_mode),
-                getString(R.string.value_mode), getColor(R.color.text_primary));
-        addRow(policyCard, getString(R.string.row_license),
-                getString(R.string.value_license), getColor(R.color.accent));
-        addRow(policyCard, getString(R.string.row_entry),
-                getString(R.string.value_entry), getColor(R.color.text_primary));
-        addRow(policyCard, getString(R.string.row_xiaomi),
-                getString(R.string.value_xiaomi), getColor(R.color.ok));
+        policyRows.removeAllViews();
+        addRow(policyRows, getString(R.string.row_mode),
+                getString(R.string.value_mode), getColor(R.color.md_on_surface));
+        addRow(policyRows, getString(R.string.row_license),
+                getString(R.string.value_license), getColor(R.color.md_primary));
+        addRow(policyRows, getString(R.string.row_entry),
+                getString(R.string.value_entry), getColor(R.color.md_on_surface));
+        addRow(policyRows, getString(R.string.row_xiaomi),
+                getString(R.string.value_xiaomi), getColor(R.color.status_ok));
 
         if (!installed) {
-            setChip(R.string.chip_missing, getColor(R.color.bad));
+            heroTitle.setText(R.string.hero_missing_title);
+            heroSupport.setText(R.string.hero_missing_support);
+            setChip(R.string.status_missing, getColor(R.color.status_bad));
         } else if (supported) {
-            setChip(R.string.chip_ready, getColor(R.color.ok));
+            heroTitle.setText(R.string.hero_ready_title);
+            heroSupport.setText(R.string.hero_ready_support);
+            setChip(R.string.status_ready, getColor(R.color.status_ok));
         } else {
-            setChip(R.string.chip_warning, getColor(R.color.warn));
+            heroTitle.setText(R.string.hero_warn_title);
+            heroSupport.setText(R.string.hero_warn_support);
+            setChip(R.string.status_warning, getColor(R.color.status_warn));
         }
 
         openAppButton.setEnabled(installed);
-        openAppButton.setAlpha(installed ? 1f : 0.45f);
     }
 
     private void setChip(int textRes, int color) {
-        chip.setText(textRes);
-        chip.setTextColor(color);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(dp(99));
-        bg.setColor((color & 0x00FFFFFF) | 0x1A000000);
-        bg.setStroke(dp(1), (color & 0x00FFFFFF) | 0x4D000000);
-        chip.setBackground(bg);
+        statusChip.setText(textRes);
+        statusChip.setTextColor(color);
+        statusChip.setChipBackgroundColor(
+                ColorStateList.valueOf(ColorUtils.setAlphaComponent(color, 0x24)));
+        statusChip.setChipStrokeColor(
+                ColorStateList.valueOf(ColorUtils.setAlphaComponent(color, 0x66)));
+        statusChip.setChipStrokeWidth(dp(1));
     }
 
-    private void addRow(LinearLayout card, CharSequence label, CharSequence value, int valueColor) {
+    private void addRow(LinearLayout container, CharSequence label, CharSequence value, int valueColor) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(8), 0, dp(8));
+        row.setPadding(0, dp(10), 0, dp(10));
 
         TextView name = new TextView(this);
+        TextViewCompat.setTextAppearance(name, R.style.TextAppearance_ControlPhone_Label);
         name.setText(label);
-        name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        name.setTextColor(getColor(R.color.text_secondary));
         row.addView(name, new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView content = new TextView(this);
+        TextViewCompat.setTextAppearance(content, R.style.TextAppearance_ControlPhone_Value);
         content.setText(value);
-        content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         content.setTextColor(valueColor);
-        content.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         content.setGravity(Gravity.END);
         row.addView(content, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        card.addView(row);
+        container.addView(row);
     }
 
     private void openTarget() {

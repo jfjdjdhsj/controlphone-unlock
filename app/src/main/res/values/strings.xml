@@ -4,12 +4,18 @@
     <string name="module_description">在运行时让 com.techbao.controlphone 1.6.3 直接返回永久激活状态，不修改原包签名，因此小米运动健康的调用方签名校验仍可通过。</string>
 
     <string name="app_title">遥控手机解锁</string>
-    <string name="app_subtitle">LSPosed 模块 · 运行时注入</string>
+    <string name="app_subtitle">LSPosed 模块</string>
 
-    <string name="chip_checking">检测中</string>
-    <string name="chip_ready">已就绪</string>
-    <string name="chip_warning">需检查</string>
-    <string name="chip_missing">未安装</string>
+    <string name="hero_ready_title">模块已就绪</string>
+    <string name="hero_ready_support">运行时注入 · 目标 1.6.3</string>
+    <string name="hero_warn_title">需要检查</string>
+    <string name="hero_warn_support">目标版本或签名与适配范围不符</string>
+    <string name="hero_missing_title">未检测到目标应用</string>
+    <string name="hero_missing_support">请先安装遥控手机 1.6.3</string>
+
+    <string name="status_ready">已就绪</string>
+    <string name="status_warning">需检查</string>
+    <string name="status_missing">未安装</string>
 
     <string name="section_env">运行环境</string>
     <string name="section_policy">解锁策略</string>
