@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          # Full history so the release notes can diff against the previous tag.
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -55,9 +58,45 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "$APK"
           echo "--- xposed entries ---"
           unzip -l "$APK" | grep 'META-INF/xposed/' || (echo "::error::missing META-INF/xposed entries" && exit 1)
+          echo "--- entry class survives R8 ---"
+          unzip -p "$APK" 'classes*.dex' | strings | grep -q 'io/github/jfjdjdhsj/controlphone/ModuleMain' \
+            || (echo "::error::ModuleMain was stripped or renamed by R8" && exit 1)
+          echo "--- size ---"
+          du -h "$APK"
           echo "--- signer ---"
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
           "$APKSIGNER" verify --print-certs "$APK"
+
+      - name: Compose release notes
+        run: |
+          set -e
+          APK=$(ls out/*.apk | head -1)
+          SIZE=$(du -h "$APK" | cut -f1)
+          PREV=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          {
+            echo "**v1.0.${{ github.run_number }}** · ${SIZE} · $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo
+            echo "## 变更"
+            echo
+            if [ -n "$PREV" ]; then
+              git log "${PREV}..HEAD" --no-merges --pretty="- %s (\`%h\`)" | head -40
+              echo
+              echo "_自 ${PREV} 起_"
+            else
+              git log --no-merges --pretty="- %s (\`%h\`)" | head -40
+            fi
+            echo
+            echo "## 安装"
+            echo
+            echo "1. 设备已 root，并安装支持 API 102 的 LSPosed。"
+            echo "2. 安装本 APK，在 LSPosed 管理器中启用模块，作用域勾选「遥控手机」。"
+            echo "3. 强制停止「遥控手机」后重新打开。"
+            echo
+            echo "## 适配"
+            echo
+            echo "仅适配 1.6.3（versionCode 51）。目标应用升级后混淆类名会变化，需重新适配。"
+          } > "$RUNNER_TEMP/release_notes.md"
+          cat "$RUNNER_TEMP/release_notes.md"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -70,15 +109,5 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: ControlPhoneUnlock v1.0.${{ github.run_number }}
-          body: |
-            LSPosed 模块，用于 `com.techbao.controlphone` 1.6.3（libxposed API 102）。
-
-            **原理**：Hook `q0.s.g()`，直接返回 `LICENSED` 状态；不改动原包，签名保持官方，因此小米运动健康的调用方签名校验不受影响。
-
-            **安装**：
-            1. 设备已 root 并安装 LSPosed（支持 API 102 的版本）。
-            2. 安装本模块 APK，在 LSPosed 中启用，作用域勾选「遥控手机」。
-            3. 强制停止「遥控手机」后重新打开。
-
-            **注意**：仅适用于 1.6.3；版本升级后混淆类名可能变化，需要重新适配。
+          body_path: ${{ runner.temp }}/release_notes.md
           files: out/*.apk
