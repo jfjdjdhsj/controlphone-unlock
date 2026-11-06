@@ -2,4 +2,50 @@
 <resources>
     <string name="module_name">遥控手机解锁</string>
     <string name="module_description">在运行时让 com.techbao.controlphone 1.6.3 直接返回永久激活状态，不修改原包签名，因此小米运动健康的调用方签名校验仍可通过。</string>
+
+    <string name="app_title">遥控手机解锁</string>
+    <string name="app_subtitle">LSPosed 模块 · 运行时注入</string>
+
+    <string name="chip_checking">检测中</string>
+    <string name="chip_ready">已就绪</string>
+    <string name="chip_warning">需检查</string>
+    <string name="chip_missing">未安装</string>
+
+    <string name="section_env">运行环境</string>
+    <string name="section_policy">解锁策略</string>
+    <string name="section_steps">使用步骤</string>
+
+    <string name="row_target">目标应用</string>
+    <string name="row_version">应用版本</string>
+    <string name="row_signature">签名校验</string>
+    <string name="row_compat">适配状态</string>
+
+    <string name="row_mode">生效方式</string>
+    <string name="row_license">授权类型</string>
+    <string name="row_entry">注入入口</string>
+    <string name="row_xiaomi">小米运动健康</string>
+
+    <string name="value_installed">已安装</string>
+    <string name="value_not_installed">未安装</string>
+    <string name="value_official">官方签名</string>
+    <string name="value_unofficial">非官方签名</string>
+    <string name="value_unknown">未知</string>
+    <string name="value_compat_ok">已适配 1.6.3</string>
+    <string name="value_compat_mismatch">版本不匹配</string>
+    <string name="value_mode">运行时 Hook，不改动原包</string>
+    <string name="value_license">永久激活</string>
+    <string name="value_entry">q0.s.g() → q0.t.k</string>
+    <string name="value_xiaomi">不受影响（签名未变）</string>
+
+    <string name="btn_open_app">打开遥控手机</string>
+    <string name="btn_open_lsposed">打开 LSPosed</string>
+    <string name="btn_copy">复制诊断信息</string>
+
+    <string name="steps_body">1. 在 LSPosed 管理器中启用本模块。\n2. 作用域勾选「遥控手机」，保存后强制停止该应用。\n3. 打开遥控手机，授权页应显示「已永久激活」。\n4. 若仍提示未激活，请重启设备后重试，并确认目标版本为 1.6.3。</string>
+
+    <string name="footer_note">仅适配 1.6.3 · 目标应用升级后混淆类名可能变化，需重新适配</string>
+
+    <string name="toast_no_target">未安装遥控手机</string>
+    <string name="toast_no_lsposed">未找到 LSPosed 管理器</string>
+    <string name="toast_copied">诊断信息已复制</string>
 </resources>

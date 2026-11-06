@@ -35,6 +35,18 @@ Without `SIGNING_STORE_FILE` the release build falls back to the debug key.
 2. Install the release APK, enable the module, scope: `com.techbao.controlphone`.
 3. Force-stop the target app and reopen it.
 
+## Module UI
+
+The APK ships a launcher activity (dark card layout, no AndroidX dependency) that reports what the module can actually verify from its own process:
+
+- **Target present / version** — installed version of `com.techbao.controlphone`.
+- **Signature** — SHA-256 of the target's signing certificate, compared against the official `e3a8aea2…da0caa`. A repacked build shows `非官方签名`, which means Mi Fitness will reject the connection no matter what this hook does.
+- **Compatibility** — only 1.6.3 is supported; any other version is flagged as `版本不匹配` because the obfuscated names change.
+- **Unlock policy** — the runtime hook target and why the Xiaomi signature check is unaffected.
+- Actions: open the target app, open the LSPosed manager, copy a diagnostics block (module/target version, cert hash, Android API level, ABI, device model).
+
+Hook activation itself cannot be read from the module process — it lives inside the target process — so the UI verifies the preconditions and points at the target's license screen for confirmation.
+
 ## Compatibility
 
 Only verified against 1.6.3 (`versionCode` 51). The obfuscated class names `q0.s` / `q0.t` / `q0.u` are version-specific.
