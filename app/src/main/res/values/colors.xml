@@ -47,4 +47,6 @@
     <color name="status_ok">#146C2E</color>
     <color name="status_warn">#8A5100</color>
     <color name="status_bad">@color/md_error</color>
+
+    <color name="icon_bg">#4C8DFF</color>
 </resources>
