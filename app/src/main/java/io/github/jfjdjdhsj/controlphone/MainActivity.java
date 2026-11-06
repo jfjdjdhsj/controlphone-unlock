@@ -14,6 +14,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.WindowInsets;
@@ -34,6 +35,7 @@ import java.util.Locale;
  */
 public class MainActivity extends Activity {
 
+    private static final String TAG = "ControlPhoneUnlock";
     private static final String TARGET_PACKAGE = "com.techbao.controlphone";
     private static final String TARGET_VERSION = "1.6.3";
     private static final String LSPOSED_PACKAGE = "org.lsposed.manager";
@@ -110,6 +112,9 @@ public class MainActivity extends Activity {
         boolean installed = info != null;
         boolean official = OFFICIAL_CERT_SHA256.equalsIgnoreCase(targetCertHash);
         boolean supported = official && TARGET_VERSION.equals(targetVersion);
+
+        Log.i(TAG, "target installed=" + installed + " version=" + targetVersion
+                + " cert=" + targetCertHash + " official=" + official + " supported=" + supported);
 
         envCard.removeAllViews();
         addRow(envCard, getString(R.string.row_target),
